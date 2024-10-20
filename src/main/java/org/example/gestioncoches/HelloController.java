@@ -5,6 +5,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,15 +15,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import org.bson.Document;
-
-import static org.example.gestioncoches.CocheDAO.collectionTipos;
-import static org.example.gestioncoches.CocheDAO.crearCoche;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
+
+import static org.example.gestioncoches.CocheDAO.*;
 
 public class HelloController implements Initializable {
 
@@ -69,7 +71,12 @@ public class HelloController implements Initializable {
 
     @FXML
     void clicEliminar(ActionEvent event) {
+        Coche cocheSeleccionado = tvTabla.getSelectionModel().getSelectedItem();
 
+        if(cocheSeleccionado != null) {
+            CocheDAO.eliminarCoche(cocheSeleccionado.getMatricula());
+            actualizarTabla();
+        }
     }
 
     @FXML
@@ -79,19 +86,41 @@ public class HelloController implements Initializable {
         String modelo = txtModelo.getText();
         String tipo = cbTipo.getValue();
         Coche coche = new Coche(matricula, marca, modelo, tipo);
+        tvTabla.setItems();
         Alerta.mostrarAlerta(crearCoche(coche));
     }
 
     @FXML
     void clicModificar(ActionEvent event) {
+        Coche cocheSeleccionado = tvTabla.getSelectionModel().getSelectedItems();
 
+        if(cocheSeleccionado != null) {
+            String matricula = txtMatricula.getText();
+            String marca = txtMarca.getText();
+            String modelo = txtModelo.getText();
+            String tipo = cbTipo.getValue();
+            Coche coche = new Coche(matricula, marca, modelo, tipo);
+            CocheDAO.actualizarCoche(coche);
+            actualizarTabla();
+        }
     }
 
     @FXML
     void clicLimpiar(ActionEvent event) {
-
+        txtMatricula.clear();
+        txtMarca.clear();
+        txtModelo.clear();
+        cbTipo.getSelectionModel().clearSelection();
     }
 
+    private void actualizarTabla(){
+        ObservableList<Coche> listaCoches= FXCollections.observableArrayList(listarCoches());
+        tvTabla.setItems(listaCoches);
+        tcMatricula.setCellValueFactory(new PropertyValueFactory<>("matricula"));
+        tcMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
+        tcModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
+        tcTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
