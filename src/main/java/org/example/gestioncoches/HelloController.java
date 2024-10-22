@@ -16,6 +16,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import org.bson.Document;
 
 import java.net.URL;
@@ -52,7 +53,7 @@ public class HelloController implements Initializable {
     private Button btnEliminar;
 
     @FXML
-    private TableView<?> tvTabla;
+    private TableView<Coche> tvTabla;
 
     @FXML
     private TableColumn<?, ?> tcMatricula;
@@ -66,42 +67,63 @@ public class HelloController implements Initializable {
     @FXML
     private TableColumn<?, ?> tcTipo;
 
+    ObservableList<Coche> coches;
+
+
     @FXML
     private ComboBox<String> cbTipo;
 
-    @FXML
-    void clicEliminar(ActionEvent event) {
-        Coche cocheSeleccionado = tvTabla.getSelectionModel().getSelectedItem();
 
-        if(cocheSeleccionado != null) {
-            CocheDAO.eliminarCoche(cocheSeleccionado.getMatricula());
-            actualizarTabla();
-        }
-    }
 
     @FXML
     void clicInsertar(ActionEvent event) {
-        String matricula = txtMatricula.getText();
+        String matricula = txtMatricula.getText(); //Mete los datos
         String marca = txtMarca.getText();
         String modelo = txtModelo.getText();
         String tipo = cbTipo.getValue();
         Coche coche = new Coche(matricula, marca, modelo, tipo);
-        tvTabla.setItems();
+
+        if (coches==null){
+            coches = FXCollections.observableArrayList();
+        }
+        coches.add(coche);
+        tvTabla.setItems(coches);
+        actualizarTabla();
         Alerta.mostrarAlerta(crearCoche(coche));
     }
 
     @FXML
     void clicModificar(ActionEvent event) {
-        Coche cocheSeleccionado = tvTabla.getSelectionModel().getSelectedItems();
+        // Obtener el coche seleccionado de la tabla
+        Coche cocheSeleccionado = tvTabla.getSelectionModel().getSelectedItem();
 
-        if(cocheSeleccionado != null) {
-            String matricula = txtMatricula.getText();
-            String marca = txtMarca.getText();
-            String modelo = txtModelo.getText();
-            String tipo = cbTipo.getValue();
-            Coche coche = new Coche(matricula, marca, modelo, tipo);
-            CocheDAO.actualizarCoche(coche);
-            actualizarTabla();
+        // Comprobar si hay un coche seleccionado
+        if (cocheSeleccionado != null) {
+            // Cargar los datos del coche seleccionado en los campos de texto
+            txtMatricula.setText(cocheSeleccionado.getMatricula());
+            txtMarca.setText(cocheSeleccionado.getMarca());
+            txtModelo.setText(cocheSeleccionado.getModelo());
+            cbTipo.setValue(cocheSeleccionado.getTipo());
+
+            // Al hacer clic en el botón modificar, se actualizan los datos
+            btnModificar.setOnAction(e -> {
+                // Crear un nuevo objeto Coche con los datos modificados
+                Coche cocheModificado = new Coche(
+                        txtMatricula.getText(),
+                        txtMarca.getText(),
+                        txtModelo.getText(),
+                        cbTipo.getValue()
+                );
+
+                // Actualizar el coche en la base de datos
+                String mensaje = actualizarCoche(cocheModificado);
+                Alerta.mostrarAlerta(mensaje);
+
+                // Actualizar la tabla
+                actualizarTabla();
+            });
+        } else {
+            Alerta.mostrarAlerta("Por favor, selecciona un coche de la tabla para modificar.");
         }
     }
 
@@ -113,9 +135,17 @@ public class HelloController implements Initializable {
         cbTipo.getSelectionModel().clearSelection();
     }
 
+    @FXML
+    void clicEliminar(ActionEvent event) {
+        Coche cocheSeleccionado = tvTabla.getSelectionModel().getSelectedItem();
+        if (cocheSeleccionado!=null){
+            coches.remove(cocheSeleccionado);
+        }
+    }
+
     private void actualizarTabla(){
         ObservableList<Coche> listaCoches= FXCollections.observableArrayList(listarCoches());
-        tvTabla.setItems(listaCoches);
+
         tcMatricula.setCellValueFactory(new PropertyValueFactory<>("matricula"));
         tcMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
         tcModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));

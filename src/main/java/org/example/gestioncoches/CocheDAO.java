@@ -61,9 +61,9 @@ public class CocheDAO {
         String mensaje="";
         try{
             collectionCoches.updateOne(new Document("matricula", coche.getMatricula()),
-                new Document("$set", new Document("marca", coche.getMarca())
-                        .append("modelo", coche.getModelo())
-                        .append("tipo", coche.getTipo())));
+                    new Document("$set", new Document("marca", coche.getMarca())
+                            .append("modelo", coche.getModelo())
+                            .append("tipo", coche.getTipo())));
             mensaje="Coche actualizado";
         } catch (MongoWriteException mwe) {
             mensaje="El coche no existe";
