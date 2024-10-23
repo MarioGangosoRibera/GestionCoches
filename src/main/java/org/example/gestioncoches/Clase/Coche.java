@@ -1,4 +1,4 @@
-package org.example.gestioncoches;
+package org.example.gestioncoches.Clase;
 
 public class Coche {
     private String matricula;

@@ -1,26 +1,13 @@
-package org.example.gestioncoches;
+package org.example.gestioncoches.Util;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
 import java.util.Properties;
 
+//Clase que hace la conexión a la base de datos MongoDB.
 public class ConnectionBD {
     public static MongoClient getConexion() {
-       /* try {
-
-            final MongoClient conexion = new MongoClient(new MongoClientURI("mongodb://admin:1234@localhost:27017/?authSource=admin"));
-
-            System.out.println("Conectada correctamente a la BD");
-
-            return conexion;
-        } catch (Exception e) {
-            System.out.println("Conexion Fallida");
-            System.out.println(e);
-            return null;
-        }
-        */
-
 
         try {
             Properties prop = new Properties();
