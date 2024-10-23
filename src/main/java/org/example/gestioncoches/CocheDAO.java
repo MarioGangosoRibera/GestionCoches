@@ -8,6 +8,7 @@ import com.mongodb.ErrorCategory;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import javax.print.Doc;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class CocheDAO {
         return mensaje;
     }//crear coche
 
-    public static List<Coche> listarCoches() {
+    public static List<Coche> listaCoches() {
         List<Coche> listaCoches = new ArrayList<>();
         try (MongoCursor<Document> cursor = collectionCoches.find().iterator()) {
             while (cursor.hasNext()) {
@@ -57,16 +58,24 @@ public class CocheDAO {
         return listaCoches;
     }
 
-    public static String actualizarCoche(Coche coche) {
+    public static String actualizarCoche(Coche cocheModificado, Coche cocheSeleccionado) {
         String mensaje="";
-        try{
-            collectionCoches.updateOne(new Document("matricula", coche.getMatricula()),
-                    new Document("$set", new Document("marca", coche.getMarca())
-                            .append("modelo", coche.getModelo())
-                            .append("tipo", coche.getTipo())));
-            mensaje="Coche actualizado";
-        } catch (MongoWriteException mwe) {
-            mensaje="El coche no existe";
+        try {
+            // Crear un documento con los nuevos datos del coche
+            Document nuevoCoche = new Document("matricula", cocheModificado.getMatricula())
+                    .append("marca", cocheModificado.getMarca())
+                    .append("modelo", cocheModificado.getModelo())
+                    .append("tipo", cocheModificado.getTipo());
+
+            // Filtrar el coche a actualizar usando la matrícula o algún identificador único
+            // Asegúrate de que el identificador que uses sea único para evitar actualizaciones incorrectas
+            String matriculaSeleccionada = cocheSeleccionado.getMatricula();
+            collectionCoches.updateOne(Filters.eq("matricula", matriculaSeleccionada), new Document("$set", nuevoCoche));
+
+            mensaje = "Coche actualizado"; // Mensaje de éxito
+        } catch (Exception e) {
+            e.printStackTrace();
+            mensaje = "Error al actualizar el coche: " + e.getMessage(); // Mensaje de error
         }
         return mensaje;
     }
